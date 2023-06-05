@@ -10,7 +10,6 @@ from urllib import parse
 import re
 import json
 from sqlalchemy import create_engine
-from sqlalchemy.dialects import registry
 import sqlalchemy as sql
 from plotly.graph_objects import Figure
 import time
@@ -258,11 +257,11 @@ class AnalyzeGPT(ChatGPT_Handler):
                 st.plotly_chart(data)
             else:
                 st.write(data)
-            i = 0
-            for key in self.st.session_state.keys():
-                if "show" in key:
-                    i += 1
-                self.st.session_state[f"show{i}"] = data
+            # i = 0
+            # for key in self.st.session_state.keys():
+            #     if "show" in key:
+            #         i += 1
+            #     self.st.session_state[f"show{i}"] = data
                 if type(data) is not Figure:
                     self.st.session_state[f"observation: show_to_user{i}"] = data
 

@@ -30,12 +30,12 @@ load_setting("AZURE_OPENAI_CHATGPT_DEPLOYMENT","chatgpt","ss-gpt")
 load_setting("AZURE_OPENAI_GPT4_DEPLOYMENT","gpt4","ss-gpt-32k")  
 load_setting("AZURE_OPENAI_ENDPOINT","endpoint","https://openai-ss.openai.azure.com/")  
 load_setting("AZURE_OPENAI_API_KEY","apikey","be51f10009fa41258fcd750a2fba07f2")  
-load_setting("SNOW_ACCOUNT", "snowaccount","lwqjkda-pi06291")
-load_setting("SNOW_USER", "snowuser","MSPRAJA")
-load_setting("SNOW_PASSWORD", "snowpassword","Forever@1919")
+load_setting("SNOW_ACCOUNT", "snowaccount","liquxks-tx06668")
+load_setting("SNOW_USER", "snowuser","SNOWFLAKEDEMO")
+load_setting("SNOW_PASSWORD", "snowpassword","Snowflake123")
 load_setting("SNOW_ROLE", "snowrole","ACCOUNTADMIN")
-load_setting("SNOW_DATABASE", "snowdatabase","YAHOO")
-load_setting("SNOW_SCHEMA", "snowschema","YAHOO_TEST")
+load_setting("SNOW_DATABASE", "snowdatabase","YAHOO_DEMO")
+load_setting("SNOW_SCHEMA", "snowschema","YAHOO")
 load_setting("SNOW_WAREHOUSE", "snowwarehouse","COMPUTE_WH")
 
 
@@ -72,11 +72,11 @@ max_response_tokens = 1500
 token_limit = 6000
 temperature = 0.2
 
-st.set_page_config(
-    page_title="AlphaData Hub", page_icon=":chart:", layout="wide"
-)
+st.set_page_config(page_title="AlphaData Hub", page_icon="images/alpha_new_logo.png", layout="wide")
 
-col1, col2  = st.columns((3,1)) 
+
+col1, col2 = st.columns([2, 5])
+
 m = st.markdown("""
 <style>
 .logo {
@@ -109,35 +109,38 @@ div.stButton > button:hover {
     height: auto;
 }
 .tagline {
-    font-size: 2 em; /* Adjust this value to change the size of the tagline */
+    font-size: 1.5em; /* Reduce the font size if necessary */
     color: #0A2F5D;
     text-align: center;
+    white-space: nowrap; /* This will prevent the tagline from wrapping */
+    # overflow: hidden; /* This will hide any overflow */
+    text-overflow: ellipsis;
 }
 </style>""", unsafe_allow_html=True)
 
 # Load the Snowflake SVG
 with open('images/snowflake-ar21.svg', 'r') as f:
     snowflake_logo = f.read()
-
-# Display the logos and tagline
-st.markdown(
-    f"""
-    <div class="logo-container">
-        <div class="logo">
-            <img class="cmp-image__image" src="https://www.crd.com/wp-content/uploads/2021/06/STT-Alpha_Logo.png" alt="State Street Global Advisors" width="200" height="55">
+with col1:
+    # Display the logos and tagline
+    st.markdown(
+        f"""
+        <div class="logo-container">
+            <div class="logo">
+                <img class="cmp-image__image" src="https://www.crd.com/wp-content/uploads/2021/06/STT-Alpha_Logo.png" alt="State Street Global Advisors" width="200" height="55">
+            </div>
+            <div class="logo snowflake-logo">
+                {snowflake_logo}
+            </div>
         </div>
-        <div class="logo snowflake-logo">
-            {snowflake_logo}
-        </div>
-    </div>
-    <h2 class="tagline">State Street x Snowflake: Reshaping Investment Landscapes with Scalable Data Solutions</h2>
-    """, unsafe_allow_html=True
-)
+        <h2 class="tagline">State Street x Snowflake: Reshaping Investment Landscapes with Scalable Data Solutions</h2>
+        """, unsafe_allow_html=True
+    )
 
 with st.sidebar:
-    options = ("SQL Assistant", "Data Analysis Assistant")
+    options = ("SQL Assistant(Statistical)", "Data Analysis Assistant(Descriptive)")
     index = st.radio(
-        "Choose the app", range(len(options)), format_func=lambda x: options[x]
+        "**Choose the app**", range(len(options)), format_func=lambda x: options[x]
     )
     if index == 0:
         system_message = """
@@ -155,17 +158,13 @@ with st.sidebar:
         extractor = ChatGPT_Handler(extract_patterns=extract_patterns)
 
         faq_dict = {
-            "ChatGPT": [
-                "Show me revenue by product in ascending order",
-                "Show me top 10 most expensive products",
-                "Show me net revenue by year. Revenue time is based on shipped date.",
-                "For each category, get the list of products sold and the total sales amount",
-                "Find Quarterly Orders by Product. First column is Product Name, then year then four other columns, each for a quarter. The amount is order amount after discount",
-            ],
-            "GPT-4": [
-                "Pick top 20 customers generated most revenue in 1998 and for each customer show 3 products that they purchased most",
-                "Which products have most seasonality in sales quantity from 1996 to 1998?",
-            ],
+            "Annualized returns of ETFs for different amounts of years",
+            "Annualized returns of Mutual funds for different amouts of years",
+            "Split of ETF funds in investment type",
+            "Split of Total net assets in investment type",
+            "Split of Mutual funds in investment type",
+            "ETFs: Correlation of returns and volatility",
+            "MutualFunds Correlation of returns and volatility" ,
         }
 
     elif index == 1:
@@ -231,16 +230,13 @@ with st.sidebar:
         ]
         extractor = ChatGPT_Handler(extract_patterns=extract_patterns)
         faq_dict = {
-            "ChatGPT": [
-                "Show me daily revenue trends in 1996 per region",
-                "Is that true that top 20% customers generate 80% revenue from 1996 to 1998? What's their percentage of revenue contribution?",
-                "Which products have most seasonality in sales quantity in 1998?",
-                "Which customers are most likely to churn in 1997?",
-            ],
-            "GPT-4": [
-                "Predict monthly revenue for next 6 months starting from May-1998. Do not use Prophet.",
-                "What is the impact of discount on sales? What's optimal discount rate?",
-            ],
+        "compare ETFs and Mutual Funds by Inception Year?",
+        "Annualized returns of ETFs for different amounts of years",
+        "Annualized returns of Mutual funds for different amouts of years",
+        "Mutual funds: coparison of fees, returns and volatility based on overall Morningstar rating",
+        "Returns based on Social, Environment, governance and sustainability score in mutual funds data",
+        "trend of ETF returns for last 10 years"
+
         }
 
     st.button("Settings", on_click=toggleSettings)
@@ -308,19 +304,20 @@ with st.sidebar:
         chat_list.append("ChatGPT")
     if st.session_state.gpt4 != "":
         chat_list.append("GPT-4")
-    gpt_engine = st.selectbox("GPT Model", chat_list)
+    gpt_engine = st.selectbox("**GPT Model**", chat_list)
     if gpt_engine == "ChatGPT":
         gpt_engine = st.session_state.chatgpt
-        faq = faq_dict["ChatGPT"]
+        faq = faq_dict
     else:
         gpt_engine = st.session_state.gpt4
-        faq = faq_dict["GPT-4"]
+        faq = faq_dict
 
-    option = st.selectbox("FAQs", faq)
+    option = st.selectbox("**FAQs**", faq)
 
-    show_code = st.checkbox("Show code", value=False)
-    show_prompt = st.checkbox("Show prompt", value=False)
-    question = st.text_area("Ask me a question", option)
+    show_code = st.checkbox("**Show code**", value=False)
+    show_prompt = st.checkbox("**Show prompt**", value=False)
+    question = st.text_area(" **Ask me a question**", option)
+
 
     if st.button("Submit"):
         if (
