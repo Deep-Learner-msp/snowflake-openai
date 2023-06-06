@@ -284,7 +284,7 @@ class AnalyzeGPT(ChatGPT_Handler):
             )
             if llm_output == "OPENAI_ERROR":
                 st.write(
-                    "Error Calling Azure Open AI, probably due to max service limit, please try again"
+                    "Oh no! Our data visualization and report generation machine is on a coffee break ☕️ It's working hard to handle all the requests, but it seems to have reached its maximum caffeine limit. Please give it a little time to recharge and try again. We appreciate your patience and apologize for any latte-induced inconveniences!"
                 )
                 break
             elif (

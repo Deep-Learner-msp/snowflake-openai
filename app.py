@@ -34,7 +34,7 @@ load_setting("SNOW_ACCOUNT", "snowaccount","liquxks-tx06668")
 load_setting("SNOW_USER", "snowuser","SNOWFLAKEDEMO")
 load_setting("SNOW_PASSWORD", "snowpassword","Snowflake123")
 load_setting("SNOW_ROLE", "snowrole","ACCOUNTADMIN")
-load_setting("SNOW_DATABASE", "snowdatabase","YAHOO_DEMO")
+load_setting("SNOW_DATABASE", "snowdatabase","PORTFOLIO_DEMO")
 load_setting("SNOW_SCHEMA", "snowschema","YAHOO")
 load_setting("SNOW_WAREHOUSE", "snowwarehouse","COMPUTE_WH")
 
@@ -137,42 +137,42 @@ with col1:
         """, unsafe_allow_html=True
     )
 
-with st.sidebar:
-    options = ("SQL Assistant(Statistical)", "Data Analysis Assistant(Descriptive)")
-    index = st.radio(
-        "**Choose the app**", range(len(options)), format_func=lambda x: options[x]
-    )
-    if index == 0:
-        system_message = """
-        You are an agent designed to interact with a Snowflake with schema detail in Snowflake.
-        Given an input question, create a syntactically correct Snowflake query to run, then look at the results of the query and return the answer.
-        You can order the results by a relevant column to return the most interesting data in the database.
-        Never query for all the columns from a specific table, only ask for a the few relevant columns given the question.
-        You MUST double check your query before executing it. If you get an error while executing a query, rewrite the query and try again.
-        DO NOT make any DML statements (INSERT, UPDATE, DELETE, DROP etc.) to the database.
-        Remember to format SQL query as in ```sql\n SQL QUERY HERE ``` in your response.
+# with st.sidebar:
+#     options = ("SQL Assistant(Statistical)", "Data Analysis Assistant(Descriptive)")
+#     index = st.radio(
+#         "**Choose the app**", range(len(options)), format_func=lambda x: options[x]
+#     )
+#     if index == 0:
+#         system_message = """
+#         You are an agent designed to interact with a Snowflake with schema detail in Snowflake.
+#         Given an input question, create a syntactically correct Snowflake query to run, then look at the results of the query and return the answer.
+#         You can order the results by a relevant column to return the most interesting data in the database.
+#         Never query for all the columns from a specific table, only ask for a the few relevant columns given the question.
+#         You MUST double check your query before executing it. If you get an error while executing a query, rewrite the query and try again.
+#         DO NOT make any DML statements (INSERT, UPDATE, DELETE, DROP etc.) to the database.
+#         Remember to format SQL query as in ```sql\n SQL QUERY HERE ``` in your response.
 
-        """
-        few_shot_examples = ""
-        extract_patterns = [("sql", r"```sql\n(.*?)```")]
-        extractor = ChatGPT_Handler(extract_patterns=extract_patterns)
+#         """
+#         few_shot_examples = ""
+#         extract_patterns = [("sql", r"```sql\n(.*?)```")]
+#         extractor = ChatGPT_Handler(extract_patterns=extract_patterns)
 
-        faq_dict = {
-            "Annualized returns of ETFs for different amounts of years",
-            "Annualized returns of Mutual funds for different amouts of years",
-            "Split of ETF funds in investment type",
-            "Split of Total net assets in investment type",
-            "Split of Mutual funds in investment type",
-            "ETFs: Correlation of returns and volatility",
-            "MutualFunds Correlation of returns and volatility" ,
-        }
+#         faq_dict = {
+#             "Annualized returns of ETFs for different amounts of years",
+#             "Annualized returns of Mutual funds for different amouts of years",
+#             "Split of ETF funds in investment type",
+#             "Split of Total net assets in investment type",
+#             "Split of Mutual funds in investment type",
+#             "ETFs: Correlation of returns and volatility",
+#             "MutualFunds Correlation of returns and volatility" ,
+        # }
 
-    elif index == 1:
-        system_message = """
+    # elif index == 1:
+    system_message = """
         You are a smart AI assistant to help answer business questions based on analyzing data. 
         You can plan solving the question with one more multiple thought step. At each thought step, you can write python code to analyze data to assist you. Observe what you get at each step to plan for the next step.
         You are given following utilities to help you retrieve data and communicate your result to end user.
-        1. execute_sql(sql_query: str): A Python function can query data from the Snowflake given a query which you need to create. The query has to be syntactically correct for Snowflake and only use tables and columns under <<data_sources>>. The execute_sql function returns a Python pandas dataframe contain the results of the query.
+        1. execute_sql(sql_query: str): A Python function can query data from the Snowflake given a query which you need to create. The query has to be syntactically correct for Snowflake and only use tables and columns under <<data_sources>>. The execute_sql function returns a Python pandas dataframe with UPPERCASE COLUMN NAMES and  contain the results of the query.
         2. Use plotly library for data visualization. 
         3. Use observe(label: str, data: any) utility function to observe data under the label for your evaluation. Use observe() function instead of print() as this is executed in streamlit environment. Due to system limitation, you will only see the first 10 rows of the dataset.
         4. To communicate with user, use show() function on data, text and plotly figure. show() is a utility function that can render different types of data to end user. Remember, you don't see data with show(), only user does. You see data with observe()
@@ -180,66 +180,60 @@ with st.sidebar:
             - If you want to show user data which is a text or a pandas dataframe or a list, use ```show(data)```
             - Never use print(). User don't see anything with print()
         5. Lastly, don't forget to deal with data quality problem. You should apply data imputation technique to deal with missing data or NAN data.
-        6. Always follow the flow of Thought: , Observation:, Action: and Answer: as in template below strictly. 
+        6. Give Detailed Descriptive Answer, that contains all the details of your above experiment
+        7. Always follow the flow of Thought: , Observation:, Action: and Answer: as in template below strictly. 
 
         """
 
-        few_shot_examples = """
-        <<Template>>
-        Question: User Question
-        Thought 1: Your thought here.
-        Action: 
-        ```python
-        #Import neccessary libraries here
-        import numpy as np
-        #Query some data 
-        sql_query = "SOME SQL QUERY"
-        step1_df = execute_sql(sql_query)
-        # Replace 0 with NaN. Always have this step
-        step1_df['Some_Column'] = step1_df['Some_Column'].replace(0, np.nan)
-        #observe query result
-        observe("some_label", step1_df) #Always use observe() instead of print
-        ```
-        Observation: 
-        step1_df is displayed here
-        Thought 2: Your thought here
-        Action:  
-        ```python
-        import plotly.express as px 
-        #from step1_df, perform some data analysis action to produce step2_df
-        #To see the data for yourself the only way is to use observe()
-        observe("some_label", step2_df) #Always use observe() 
-        #Decide to show it to user.
-        fig=px.line(step2_df)
-        #visualize fig object to user.  
-        show(fig)
-        #you can also directly display tabular or text data to end user.
-        show(step2_df)
-        ```
-        Observation: 
-        step2_df is displayed here
-        Answer: Your final answer and comment for the question
-        <</Template>>
+    few_shot_examples = """
+    <<Template>>
+    Question: User Question
+    Thought 1: Your thought here.
+    Action: 
+    ```python
+    #Import neccessary libraries here
+    import numpy as np
+    #Query some data 
+    sql_query = "SOME SQL QUERY"
+    step1_df = execute_sql(sql_query)
+    step1_df.columns = step1_df.columns.str.upper()
+    # Replace 0 with NaN. Always have this step
+    step1_df['Some_Column'] = step1_df['Some_Column'].replace(0, np.nan)
+    #observe query result
+    observe("some_label", step1_df) #Always use observe() instead of print
+    ```
+    Observation: 
+    step1_df is displayed here
+    Thought 2: Your thought here
+    Action:  
+    ```python
+    import plotly.express as px 
+    #from step1_df, perform some data analysis action to produce step2_df
+    #To see the data for yourself the only way is to use observe()
+    observe("some_label", step2_df) #Always use observe() 
+    #Decide to show it to user.
+    fig=px.line(step2_df)
+    #visualize fig object to user.  
+    show(fig)
+    #you can also directly display tabular or text data to end user.
+    show(step2_df)
+    ```
+    Observation: 
+    step2_df is displayed here
+    Answer: Your final detailed descriptive answer and comment for the question
+    <</Template>>
 
-        """
+    """
 
-        extract_patterns = [
-            ("Thought:", r"(Thought \d+):\s*(.*?)(?:\n|$)"),
-            ("Action:", r"```python\n(.*?)```"),
-            ("Answer:", r"([Aa]nswer:) (.*)"),
+    extract_patterns = [
+        ("Thought:", r"(Thought \d+):\s*(.*?)(?:\n|$)"),
+        ("Action:", r"```python\n(.*?)```"),
+        ("Answer:", r"([Aa]nswer:) (.*)"),
         ]
-        extractor = ChatGPT_Handler(extract_patterns=extract_patterns)
-        faq_dict = {
-        "compare ETFs and Mutual Funds by Inception Year?",
-        "Annualized returns of ETFs for different amounts of years",
-        "Annualized returns of Mutual funds for different amouts of years",
-        "Mutual funds: coparison of fees, returns and volatility based on overall Morningstar rating",
-        "Returns based on Social, Environment, governance and sustainability score in mutual funds data",
-        "trend of ETF returns for last 10 years"
+    extractor = ChatGPT_Handler(extract_patterns=extract_patterns)
+    
 
-        }
-
-    st.button("Settings", on_click=toggleSettings)
+    # st.button("Settings", on_click=toggleSettings)
     if st.session_state["show_settings"]:
         with st.form("AzureOpenAI"):
             st.title("Azure OpenAI Settings")
@@ -304,19 +298,17 @@ with st.sidebar:
         chat_list.append("ChatGPT")
     if st.session_state.gpt4 != "":
         chat_list.append("GPT-4")
-    gpt_engine = st.selectbox("**GPT Model**", chat_list)
+    gpt_engine = st.radio("**GPT Model**", ("ChatGPT", "GPT4"))
     if gpt_engine == "ChatGPT":
         gpt_engine = st.session_state.chatgpt
-        faq = faq_dict
     else:
         gpt_engine = st.session_state.gpt4
-        faq = faq_dict
 
-    option = st.selectbox("**FAQs**", faq)
-
-    show_code = st.checkbox("**Show code**", value=False)
-    show_prompt = st.checkbox("**Show prompt**", value=False)
-    question = st.text_area(" **Ask me a question**", option)
+    # show_code = st.checkbox("**Show code**", value=False)
+    # show_prompt = st.checkbox("**Show prompt**", value=False)
+    col1, col2 = st.columns([5,10])
+    with col1:
+        question = st.text_area(" **Ask me a question**")
 
 
     if st.button("Submit"):
@@ -355,9 +347,8 @@ with st.sidebar:
                 temperature=temperature,
                 db_schema=st.session_state.snowschema
             )
-            if index == 0:
-                analyzer.query_run(question, show_code, show_prompt, col1)
-            elif index == 1:
-                analyzer.run(question, show_code, show_prompt, col1)
-            else:
+            try:
+                with st.spinner("Unlocking Data's Secrets: Analyzing... Hold on for 30-40 seconds of Data Wizardry!"):
+                    analyzer.run(question, False, False, col1)
+            except:
                 st.error("Not implemented yet!")
