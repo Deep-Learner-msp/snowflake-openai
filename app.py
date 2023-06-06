@@ -68,8 +68,8 @@ openai.api_type = "azure"
 openai.api_version = "2023-03-15-preview"
 openai.api_key = st.session_state.apikey
 openai.api_base = st.session_state.endpoint
-max_response_tokens = 1500
-token_limit = 6000
+max_response_tokens = 2000
+token_limit = 10000
 temperature = 0.2
 
 st.set_page_config(page_title="AlphaData Hub", page_icon="images/alpha_new_logo.png", layout="wide")
@@ -180,8 +180,7 @@ with col1:
             - If you want to show user data which is a text or a pandas dataframe or a list, use ```show(data)```
             - Never use print(). User don't see anything with print()
         5. Lastly, don't forget to deal with data quality problem. You should apply data imputation technique to deal with missing data or NAN data.
-        6. Give Detailed Descriptive Answer, that contains all the details of your above experiment
-        7. Always follow the flow of Thought: , Observation:, Action: and Answer: as in template below strictly. 
+        6. Always follow the flow of Thought: , Observation:, Action: and Answer: as in template below strictly. 
 
         """
 
@@ -201,6 +200,7 @@ with col1:
     step1_df['Some_Column'] = step1_df['Some_Column'].replace(0, np.nan)
     #observe query result
     observe("some_label", step1_df) #Always use observe() instead of print
+    ## you can talk about the data based on user question and explain the data.
     ```
     Observation: 
     step1_df is displayed here
@@ -303,52 +303,49 @@ with col1:
         gpt_engine = st.session_state.chatgpt
     else:
         gpt_engine = st.session_state.gpt4
+col1, col2 = st.columns([1, 1])  # Divide the page into two equal columns
+with col1:
+    question = st.text_area(" **Ask me a question**")
 
-    # show_code = st.checkbox("**Show code**", value=False)
-    # show_prompt = st.checkbox("**Show prompt**", value=False)
-    col1, col2 = st.columns([5,10])
-    with col1:
-        question = st.text_area(" **Ask me a question**")
+if st.button("Submit"):
+    if (
+        st.session_state.apikey == ""
+        or st.session_state.endpoint == ""
+        or st.session_state.chatgpt == ""
+    ):
+        st.error("You need to specify Azure Open AI Deployment Settings!")
+    elif (
+        st.session_state.snowaccount == ""
+        or st.session_state.snowuser == ""
+        or st.session_state.snowpassword == ""
+        or st.session_state.snowrole == ""
+    ):
+        st.error("You need to specify Snowflake Settings!")
+    else:
+        sql_query_tool = SQL_Query(
+            account_identifier=st.session_state.snowaccount,
+            db_user=st.session_state.snowuser,
+            db_password=st.session_state.snowpassword,
+            db_role=st.session_state.snowrole,
+            db_name=st.session_state.snowdatabase,
+            db_schema=st.session_state.snowschema,
+            db_warehouse=st.session_state.snowwarehouse
+        )
+        analyzer = AnalyzeGPT(
+            content_extractor=extractor,
+            sql_query_tool=sql_query_tool,
+            system_message=system_message,
+            few_shot_examples=few_shot_examples,
+            st=st,
+            gpt_deployment=gpt_engine,
+            max_response_tokens=max_response_tokens,
+            token_limit=token_limit,
+            temperature=temperature,
+            db_schema=st.session_state.snowschema
+        )
+        try:
+            with st.spinner("Unlocking Data's Secrets: Analyzing... Hold on for 30-40 seconds of Data Wizardry!"):
+                analyzer.run(question, False, False, st)  # Use st instead of col1
+        except:
+            st.error("Not implemented yet!")
 
-
-    if st.button("Submit"):
-        if (
-            st.session_state.apikey == ""
-            or st.session_state.endpoint == ""
-            or st.session_state.chatgpt == ""
-        ):
-            st.error("You need to specify Azure Open AI Deployment Settings!")
-        elif (
-            st.session_state.snowaccount == ""
-            or st.session_state.snowuser == ""
-            or st.session_state.snowpassword == ""
-            or st.session_state.snowrole == ""
-        ):
-            st.error("You need to specify Snowflake Settings!")
-        else:
-            sql_query_tool = SQL_Query(
-                account_identifier=st.session_state.snowaccount,
-                db_user=st.session_state.snowuser,
-                db_password=st.session_state.snowpassword,
-                db_role=st.session_state.snowrole,
-                db_name=st.session_state.snowdatabase,
-                db_schema=st.session_state.snowschema,
-                db_warehouse=st.session_state.snowwarehouse
-            )
-            analyzer = AnalyzeGPT(
-                content_extractor=extractor,
-                sql_query_tool=sql_query_tool,
-                system_message=system_message,
-                few_shot_examples=few_shot_examples,
-                st=st,
-                gpt_deployment=gpt_engine,
-                max_response_tokens=max_response_tokens,
-                token_limit=token_limit,
-                temperature=temperature,
-                db_schema=st.session_state.snowschema
-            )
-            try:
-                with st.spinner("Unlocking Data's Secrets: Analyzing... Hold on for 30-40 seconds of Data Wizardry!"):
-                    analyzer.run(question, False, False, col1)
-            except:
-                st.error("Not implemented yet!")
