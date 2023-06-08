@@ -40,20 +40,6 @@ def load_setting(setting_name, session_name,default_value=''):
             st.session_state[session_name] = default_value  
 
 
-
-
-load_setting("AZURE_OPENAI_CHATGPT_DEPLOYMENT","chatgpt","ss-gpt")  
-load_setting("AZURE_OPENAI_GPT4_DEPLOYMENT","gpt4","ss-gpt-32k")  
-load_setting("AZURE_OPENAI_ENDPOINT","endpoint","https://openai-ss.openai.azure.com/")  
-load_setting("OPENAI_API_KEY","apikey","be51f10009fa41258fcd750a2fba07f2")  
-load_setting("SNOW_ACCOUNT", "snowaccount","liquxks-tx06668")
-load_setting("SNOW_USER", "snowuser","SNOWFLAKEDEMO")
-load_setting("SNOW_PASSWORD", "snowpassword","Snowflake123")
-load_setting("SNOW_ROLE", "snowrole","ACCOUNTADMIN")
-load_setting("SNOW_DATABASE", "snowdatabase","PORTFOLIO_DEMO")
-load_setting("SNOW_SCHEMA", "snowschema","YAHOO")
-load_setting("SNOW_WAREHOUSE", "snowwarehouse","COMPUTE_WH")
-
 if "show_settings" not in st.session_state:
     st.session_state["show_settings"] = False
 
@@ -228,11 +214,11 @@ model = AzureChatOpenAI(temperature=0,deployment_name=gpt_engine)
 
 
 def create_db_connection():
-    db_user="SNOWFLAKEDEMO"
-    db_password="Snowflake123"
-    account_identifier="liquxks-tx06668"
-    db_name="PORTFOLIO_DEMO"
-    db_schema="YAHOO"
+    db_user="db user"
+    db_password="pasasword"
+    account_identifier="accound_id"
+    db_name="db name"
+    db_schema="schema"
     db_warehouse="COMPUTE_WH"
     db_role="ACCOUNTADMIN"
 
